@@ -1,0 +1,35 @@
+export default [
+  {
+      label:'用户类型',
+      prop:'userType',
+      width:100
+  },
+  {
+      label:'用户ID',
+      prop:'userID'
+  },
+  {
+      label:'账户名',
+      prop:'userAccount'
+  },
+  {
+      label:'密码',
+      prop:'userPassword',
+      width:100
+  },
+  {
+      label:'姓名',
+      prop:'userName',
+      width:100
+  },
+  {
+      label:'班级',
+      prop:'className',
+      width:210
+  },
+  {
+      label:"操作",
+      operate:true, //操作特有的属性
+      width:100
+  }
+]

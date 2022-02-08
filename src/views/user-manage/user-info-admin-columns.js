@@ -1,0 +1,32 @@
+export default [
+    {
+        label:'用户类型',
+        prop:'userType',
+    },
+    {
+        label:'用户ID',
+        prop:'userID'
+    },
+    {
+        label:'账户名',
+        prop:'userAccount'
+    },
+    {
+        label:'密码',
+        prop:'userPassword'
+    },
+    {
+        label:'姓名',
+        prop:'userName'
+    },
+    {
+        label:'学院',
+        prop:'insName',
+        width:200
+    },
+    {
+        label:"操作",
+        operate:true, //操作特有的属性
+        width:200
+    }
+]
