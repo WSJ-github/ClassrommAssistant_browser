@@ -5,14 +5,12 @@
       :sumNum="sumNum">
       <el-button @click="showRegisterBox=true">注册学生</el-button>
     </table-header>
-    <w-table 
+    <w-table
       :tableData="tableData" 
       v-loading="showLoading"
       :columns="StudentsInfoColumns">
-      <template>
-      <!-- <template slot-scope="scope"> -->
-        <!-- <el-button @click="deleteRow(scope.rowData)">删除</el-button> -->
-        <el-button>删除</el-button>
+      <template slot-scope="scope">
+        <el-button @click="deleteRow(scope.rowData)">删除</el-button>
       </template>
     </w-table>
     <el-pagination
@@ -31,10 +29,12 @@
       :registerLoading="registerLoading"
       :columnInfo="StudentsInfoColumns"
       :staticDataList="{className,insName}"
-      @pictureUploadOver="pictureUploadOver()"
+      :group_id="group_id"
+      singleFlag
+      @pictureUploadOver="pictureUploadOver"
       @clickCancel="showRegisterBox=false"
       ref='majorDialog'
-      width="60%">
+      width="80%">
     </register-dialog>
   </div>
 </template>
@@ -63,7 +63,8 @@ export default {
       sumNum:0,
       page_index:1,
       page_size:25,
-      registerLoading:false
+      registerLoading:false,
+      group_id:this.$route.query.group_id
     }
   },
   created(){
@@ -84,6 +85,33 @@ export default {
     pictureUploadOver(){
       this.getStudentsList();
       this.showRegisterBox=false;
+    },
+    deleteRow(rowData){
+       this.$confirm('确认删除该条学生数据?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        api.DeleteStudent(rowData.stuID,this.group_id)
+        .then(res=>{
+          if(res.code===1){
+            this.$message({
+              type: 'success',
+              message: '删除成功!'
+            });
+            this.sumNum--;
+            this.tableData=this.tableData.filter(item=>{
+              if(item.stuID===rowData.stuID) return false
+              else return true
+            })
+          }
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        });          
+      });
     }
   }
 

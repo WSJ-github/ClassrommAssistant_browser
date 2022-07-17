@@ -6,7 +6,7 @@ import router from '@/router'
 // console.log(process.env.VUE_APP_BASE_API)
 const service = Axios.create({
     baseURL:process.env.VUE_APP_BASE_API,
-    timeout:500
+    timeout:5000
 })
 
 // service.interceptors.request.use(config=>{
@@ -16,7 +16,7 @@ const service = Axios.create({
 //     console.log(error)
 //     Promise.reject(error)
 // })
-
+//抽取共性，封装成响应拦截器
 service.interceptors.response.use(({data:res})=>{
     if(res.code == '4'){ //token过期
         MessageBox.alert('您的身份已经过期，请重新登录','身份过期',{

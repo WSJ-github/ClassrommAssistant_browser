@@ -1,35 +1,43 @@
 export default [
   {
-      label:'用户类型',
-      prop:'userType',
-      width:100
+    label:'用户类型',
+    prop:'userType',
+    width:80,
+    majorKey:true
   },
   {
-      label:'用户ID',
-      prop:'userID'
+    label:'用户ID',
+    prop:'userID',
+    majorKey:true
   },
   {
-      label:'账户名',
-      prop:'userAccount'
+    label:'账户名',
+    prop:'userAccount'
   },
   {
-      label:'密码',
-      prop:'userPassword',
-      width:100
+    label:'密码',
+    prop:'userPassword',
+    width:80
   },
   {
-      label:'姓名',
-      prop:'userName',
-      width:100
+    label:'姓名',
+    prop:'userName',
+    width:80
   },
   {
-      label:'班级',
-      prop:'className',
-      width:210
+    label:'班级',
+    prop:'className',
+    width:210
+  },
+  {
+    label:'管理的课程',
+    prop:'manageCourse',
+    multiple:true,
+    width:180
   },
   {
       label:"操作",
       operate:true, //操作特有的属性
-      width:100
+      width:180
   }
 ]

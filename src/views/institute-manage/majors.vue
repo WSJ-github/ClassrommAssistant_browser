@@ -10,6 +10,7 @@
       v-loading="showLoading"
       :columns="MajorsInfoColumns">
       <template slot-scope="scope">
+        <el-button @click="updateRow(scope.rowData)">修改</el-button>
         <el-button @click="deleteRow(scope.rowData)">删除</el-button>
       </template>
     </w-table>
@@ -34,6 +35,18 @@
       ref='majorDialog'
       width="40%">
     </register-dialog>
+    <modify-dialog
+      v-if="showModifyBox"
+      :showModifyBox="showModifyBox"
+      :modifyLoading="modifyLoading"
+      :columnInfo="MajorsInfoColumns"
+      :rowData="currentRowData"
+      :staticDataList="{insName}"
+      @clickConfirm="updateMajor"
+      @clickCancel="showModifyBox=false"
+      ref='modifyDialog'
+      width="40%">
+    </modify-dialog>
   </div>
 </template>
 
@@ -42,12 +55,14 @@ import MajorsInfoColumns from './majors-info-columns.js'
 import WTable from '@/components/WTable.vue'
 import TableHeader from '@/components/Table-Header.vue'
 import RegisterDialog from '@/components/Register-Dialog.vue'
+import ModifyDialog from '@/components/Modify-Dialog.vue'
 import api from 'api'
 export default {
   components:{
     WTable,
     TableHeader,
-    RegisterDialog
+    RegisterDialog,
+    ModifyDialog
   },
   data(){
     return{
@@ -60,7 +75,10 @@ export default {
       sumNum:0,
       page_index:1,
       page_size:25,
-      registerLoading:false
+      registerLoading:false,
+      showModifyBox:false,
+      modifyLoading:false,
+      currentRowData:''
     }
   },
   created(){
@@ -123,6 +141,31 @@ export default {
         });          
       });
     },
+    updateRow(rowData){
+      this.currentRowData=rowData
+      this.showModifyBox=true
+    },
+    updateMajor(oldData,updateObj){
+      this.modifyLoading=true
+      api.UpdateMajor(oldData,updateObj).then(res=>{
+        if(res.code==1){
+          this.modifyLoading=false;
+          this.showModifyBox=false;
+          this.getMajorsList();
+          this.$message({
+            type: 'success',
+            message: res.message
+          })
+        }
+        else if(res.code==2){
+          this.modifyLoading=false;
+          this.$message({
+            type: 'error',
+            message: res.message
+          })
+        }
+      })
+    }
   }
 }
 </script>

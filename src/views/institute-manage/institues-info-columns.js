@@ -13,6 +13,6 @@ export default [
   {
     label:'操作',
     operate:true,
-    width:200
+    width:300
   }
 ]

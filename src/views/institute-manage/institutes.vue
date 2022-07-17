@@ -3,14 +3,15 @@
     <table-header 
       :breadcrumbItems="breadcrumbItems"
       :sumNum="sumNum">
-      <el-button @click="showRegisterBox=true">注册学院</el-button>
+      <el-button v-if="userInfo.userType=='SA'" @click="showRegisterBox=true">注册学院</el-button>
     </table-header>
-    <w-table 
-      :tableData="tableData" 
+    <w-table
+      :tableData="tableData"
       v-loading="showLoading"
       :columns="InstitutesInfoColumns">
       <template slot-scope="scope">
         <el-button @click="deleteRow(scope.rowData)">删除</el-button>
+        <el-button @click="updateRow(scope.rowData)">修改</el-button>
         <el-button @click="checkMajors(scope.rowData)">开设专业</el-button>
       </template>
     </w-table>
@@ -34,6 +35,17 @@
       ref='registerDialog'
       width="40%">
     </register-dialog>
+    <modify-dialog
+      v-if="showModifyBox"
+      :showModifyBox="showModifyBox"
+      :modifyLoading="modifyLoading"
+      :columnInfo="InstitutesInfoColumns"
+      :rowData="currentRowData"
+      @clickConfirm="updateInstitute"
+      @clickCancel="showModifyBox=false"
+      ref='modifyDialog'
+      width="40%">
+    </modify-dialog>
   </div>
 </template>
 
@@ -42,12 +54,15 @@ import InstitutesInfoColumns from './institues-info-columns.js'
 import WTable from '@/components/WTable.vue'
 import TableHeader from '@/components/Table-Header.vue'
 import RegisterDialog from '@/components/Register-Dialog.vue'
+import ModifyDialog from '@/components/Modify-Dialog.vue'
 import api from 'api'
+import {mapState} from 'vuex'
 export default {
   components:{
     WTable,
     TableHeader,
-    RegisterDialog
+    RegisterDialog,
+    ModifyDialog
   },
   data(){
     return {
@@ -60,18 +75,32 @@ export default {
       page_size:25,
       //下面变量是用于传递给注册框子组件的
       showRegisterBox:false,
-      registerLoading:false
+      registerLoading:false,
+      //下面变量是用于传递给修改框子组件的
+      showModifyBox:false,
+      modifyLoading:false,
+      currentRowData:''
     }
   },
   created() {
     this.getInstituesList();
+  },
+  computed: {
+    ...mapState(['userInfo','accessToken'])
   },
   methods:{
     getInstituesList(){
       this.showLoading=true;
       api.FetchInstituesList(this.page_index,this.page_size).then(res=>{
         if(res.code===1){
-          this.sumNum=res.sumNum
+          if(this.userInfo.userType=='TS'){
+            this.sumNum=1
+            res.data=res.data.filter(item=>{
+              if(item.insName==this.userInfo.insName) return true
+              else return false
+            })
+          }
+          else this.sumNum=res.sumNum
           this.tableData = res.data
           this.showLoading=false;
         }
@@ -132,6 +161,31 @@ export default {
         path:'/instituteManage/majors',
         query:{
           insName:rowData.insName
+        }
+      })
+    },
+    updateRow(rowData){
+      this.currentRowData=rowData
+      this.showModifyBox=true
+    },
+    updateInstitute(oldData,updateObj){
+      this.modifyLoading=true
+      api.UpdateInstitute(oldData,updateObj).then(res=>{
+        if(res.code==1){
+          this.modifyLoading=false;
+          this.showModifyBox=false;
+          this.getInstituesList();
+          this.$message({
+            type: 'success',
+            message: res.message
+          })
+        }
+        else if(res.code==2){
+          this.modifyLoading=false;
+          this.$message({
+            type: 'error',
+            message: res.message
+          })
         }
       })
     }

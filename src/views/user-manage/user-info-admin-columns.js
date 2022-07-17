@@ -2,14 +2,17 @@ export default [
     {
         label:'用户类型',
         prop:'userType',
+        majorKey:true
     },
     {
         label:'用户ID',
-        prop:'userID'
+        prop:'userID',
+        width:80
     },
     {
         label:'账户名',
-        prop:'userAccount'
+        prop:'userAccount',
+        majorKey:true
     },
     {
         label:'密码',
@@ -17,7 +20,7 @@ export default [
     },
     {
         label:'姓名',
-        prop:'userName'
+        prop:'userName',
     },
     {
         label:'学院',

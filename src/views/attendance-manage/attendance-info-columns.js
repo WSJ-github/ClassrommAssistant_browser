@@ -1,0 +1,42 @@
+export default [
+  {
+      label:'记录ID',
+      prop:'recordID',
+      width:180
+  },
+  {
+      label:'记录员',
+      prop:'userName',
+      width:90,
+  },
+  {
+      label:'应到人数',
+      prop:'attShouldNum',
+      width:80
+  },
+  {
+      label:"实到人数",
+      prop:'attActualNum',
+      width:80
+  },
+  {
+    label:'考勤时间',
+    prop:'attTime',
+    width:180
+  },
+  {
+    label:'考勤课程',
+    prop:'couName',
+    width:150
+  },
+  {
+    label:'课程ID',
+    prop:'couID',
+    width:80,
+  },
+  {
+    label:"操作",
+    operate:true, //操作特有的属性
+    width:200
+  }
+]

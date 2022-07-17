@@ -43,7 +43,7 @@ export default {
             params:{
                 page_index,
                 page_size,
-                accessToken:token
+                accessToken:token,
             }
         })
     },
@@ -68,6 +68,17 @@ export default {
             url:`/add/${state}`,
             method:'POST',
             data:data,
+            params:{accessToken:$store.state.accessToken}
+        })
+    },
+    /***
+     * 修改用户信息
+     */
+     async UpdateUserInfo(state,oldData,newData){
+        return await AxiosInstance({
+            url:`/update/${state}`,
+            method:'POST',
+            data:{oldData,newData},
             params:{accessToken:$store.state.accessToken}
         })
     },
@@ -112,6 +123,17 @@ export default {
         })
     },
     /***
+     * 修改学院信息
+     */
+     async UpdateInstitute(oldData,newData){
+        return await AxiosInstance({
+            url:'/update/institute',
+            method:'POST',
+            data:{oldData,newData},
+            params:{accessToken:$store.state.accessToken}
+        })
+    },
+    /***
      * 拉取某个学院的专业信息
      * 参数:1.页码2.页大小3.学院名称(可选)
      */
@@ -136,6 +158,18 @@ export default {
             url:'/add/majors',
             method:'POST',
             data,
+            params:{accessToken:$store.state.accessToken}
+        })
+    },
+    /***
+     * 修改某个学院的专业
+     * 参数:1.注册专业的注册数据列表
+     */
+     async UpdateMajor(oldData,newData){
+        return await AxiosInstance({
+            url:'/update/majors',
+            method:'POST',
+            data:{oldData,newData},
             params:{accessToken:$store.state.accessToken}
         })
     },
@@ -171,11 +205,22 @@ export default {
     /***
      * 删除某条班级信息
      */
-     async DeleteClass(className){
+     async DeleteClass(className,group_id){
         return await AxiosInstance({
             url:'/delete/class',
             method:'POST',
-            data:{className},
+            data:{className,group_id},
+            params:{accessToken:$store.state.accessToken}
+        })
+    }, 
+    /***
+     * 更新某条班级信息
+     */
+     async UpdateClassInfo(oldData,newData){
+        return await AxiosInstance({
+            url:'/update/class',
+            method:'POST',
+            data:{oldData,newData},
             params:{accessToken:$store.state.accessToken}
         })
     }, 
@@ -204,5 +249,165 @@ export default {
                 accessToken:$store.state.accessToken
             }
         })
+    },
+    /***
+     * 删除某个学生信息
+     */
+     async DeleteStudent(stuID,group_id){
+        return await AxiosInstance({
+            url:'/delete/student',
+            method:'POST',
+            data:{stuID,group_id},
+            params:{accessToken:$store.state.accessToken}
+        })
+    },
+    /***
+     * 拉取课程信息
+     * 参数:1.页码2.页大小3.学院名称（可选参数，TS需要传获取部分，SA不传获取全部）
+     */
+    async FetchCoursesList(page_index,page_size,insName){
+        return await AxiosInstance({
+            url:'/fetch/courses',
+            method:'GET',
+            params:{
+                page_index,
+                page_size,
+                insName,
+                accessToken:$store.state.accessToken
+            }
+        })
+    },
+    /***
+     * 注册课程信息
+     */
+    async AddCourseInfo(data){
+        return await AxiosInstance({
+            url:'/add/courses',
+            method:'POST',  
+            data,
+            params:{accessToken:$store.state.accessToken}
+        })
+    },
+    /***
+     * 拉取课程详情信息
+     * 参数:1.课程ID
+     */
+    async FetchCoursesDetail(couID){
+        return await AxiosInstance({
+            url:'/fetch/courseDetail',
+            method:'GET',
+            params:{
+                couID,
+                accessToken:$store.state.accessToken
+            }
+        })
+    },
+    /***
+     * 删除某条课程信息
+     */
+     async DeleteCourse(couID){
+        return await AxiosInstance({
+            url:'/delete/course',
+            method:'POST',
+            data:{couID},
+            params:{accessToken:$store.state.accessToken}
+        })
+    },
+    /***
+     * 查询课程选课信息(即根据课程ID来抽取出选择该课程的学生的ID)
+     * 参数:1.课程ID 
+     */
+    async QuerySelectedCoursesInfo(couID){
+        return await AxiosInstance({
+            url:'/query/selectedInfo',
+            method:'GET',
+            params:{
+                couID,
+                accessToken:$store.state.accessToken
+            }
+        })
+    },
+    /***
+     * 新增选课信息
+     */
+    async addSelectCourseInfo(stuIDList,couID){
+        return await AxiosInstance({
+            url:'/add/courseSelectedInfo',
+            method:'POST',
+            data:{stuIDList,couID},
+            params:{ accessToken:$store.state.accessToken}
+        })
+    },
+    /***
+     * 拉取课程选课信息
+     * 参数:3.学院名称(可选参数，不传的话就默认拉取所有课程的选课信息)
+     */
+    async FetchSelectedCoursesInfo(page_index,page_size,insName){
+        return await AxiosInstance({
+            url:'/fetch/selectedInfo',
+            method:'GET',
+            params:{
+                page_index,
+                page_size,
+                insName,
+                accessToken:$store.state.accessToken
+            }
+        })
+    },
+    /***
+     * 删除课程选课信息(即根据课程ID来抽取出选择该课程的学生的ID)
+     * 参数:1.couID 2.stuID
+     */
+     async DeleteSelectedCoursesInfo(couID,stuID){
+        return await AxiosInstance({
+            url:'/delete/selectedInfo',
+            method:'POST',
+            data:{couID,stuID},
+            params:{accessToken:$store.state.accessToken}
+        })
+    },
+    /***
+     * 拉取考勤记录
+     */
+    async FetchAttendanceRecordList(page_index,page_size,insName){
+        return await AxiosInstance({
+            url:'/getInstitute/AttendanceRecordList',
+            method:'POST',
+            data:{
+                insName,
+                page:page_index,
+                per_page:page_size
+            },
+            params:{accessToken:$store.state.accessToken}
+        })
+    },
+    /***
+     * 删除考勤记录
+     */
+    async DeleteAttendanceRecord(recordID){
+        return await AxiosInstance({
+            url:'/delete/attendanceRecord',
+            params:{
+                accessToken:$store.state.accessToken,
+                recordID
+            }
+        })
+    },
+    /***
+     * 筛选出特定条件(比如特定时间范围内)的考勤记录
+     */
+    async FilterAttendanceRecord(filterData){
+        return await AxiosInstance({
+            url:'/filter/attendanceRecord',
+            method:'POST',
+            params:{
+                accessToken:$store.state.accessToken,
+            },
+            data:{
+                filterData
+            }
+        })
     }
+
+
 }

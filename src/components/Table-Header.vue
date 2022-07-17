@@ -4,8 +4,9 @@
       <el-breadcrumb-item
         v-for="(item,index) in breadcrumbItems"
         :key="index" 
-        :to="item.path?{path:item.path}:''">
-        {{item.label}}
+        :to="item.path?{path:item.path}:''"
+        :style="{'fontWeight':item.reList?'600':'400','cursor':item.reList?'pointer':'default'}">
+        <span @click="item.reList?$emit('getList'):''">{{item.label}}</span>
       </el-breadcrumb-item>
       &nbsp;·&nbsp;{{sumNum}}
     </el-breadcrumb>
@@ -25,15 +26,14 @@ export default {
     sumNum:{
       type:Number,
       default:0
-    }
+    },
   }
-
 }
 </script>
 
 <style lang="scss">
   #table-header{
-    height: 50px;
+    height: $table-header;
     display: flex;
     align-items: center;
     justify-content:space-between;

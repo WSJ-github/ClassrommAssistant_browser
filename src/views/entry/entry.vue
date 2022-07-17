@@ -1,7 +1,7 @@
 <template>
   <div id="loginPage">
     <div class="login-box">
-      <header>教室小助手后台管理系统</header>
+      <header>智慧考勤系统后台管理端</header>
       <el-input v-model="accountName" placeholder="请输入用户名" prefix-icon="el-icon-user"></el-input>
       <el-input v-model="password" placeholder="请输入密码" show-password prefix-icon="el-icon-key"></el-input>
       <el-button type="primary" @click="login()">登录</el-button>

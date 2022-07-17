@@ -1,0 +1,39 @@
+export default [
+  {
+    label:'学号',
+    prop:'stuID',
+    width:200,
+    majorKey:true
+  },
+  {
+    label:'姓名',
+    prop:'stuName',
+    width:100
+  },
+  {
+    label:'课程号',
+    prop:'couID',
+    width:100,
+    majorKey:true
+  },
+  {
+    label:'课程名称',
+    prop:'couName',
+    width:100
+  },
+  {
+    label:'任课教师',
+    prop:'couTeacher',
+    width:100,
+  },
+  {
+    label:'学院名称',
+    prop:'insName',
+    width:180,
+  },
+  {
+    label:"操作",
+    operate:true, //操作特有的属性
+    width:100
+  }
+]

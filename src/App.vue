@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <header class="app-header" v-if="$route.path!='/entry'">
-      <h3>教室小助手后台管理系统</h3>
+      <h3>智慧考勤系统后台管理端</h3>
       <el-button size="small" @click="LoginOut()">登出</el-button>
     </header>
     <div style="display:flex">
@@ -45,11 +45,12 @@ export default {
 
 <style lang='scss'>
 #app{
+  min-width:1380px;
   margin: 0;
   padding: 0;
   .app-header{
     padding: 0 20px;
-    height: 60px;
+    height: $sheader-height;
     background-color: rgb(179, 175, 175);
     display: flex;
     justify-content: space-between;
@@ -62,6 +63,12 @@ export default {
     flex: 1;
     background-color: #f0f2f5;
   }
+  .el-pagination{
+    height: $pagination-height;
+    display: flex;
+    align-items: center;
+    justify-content:center;
+    padding: 0;
+  }
 }
-
 </style>

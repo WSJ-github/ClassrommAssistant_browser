@@ -1,13 +1,16 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import entry from '@/views/entry/entry.vue'
-import home from '@/views/home/home.vue'
-import Layout from '@/views/Layout.vue'
-import userManage from '@/views/user-manage/user-manage.vue'
-import institutes from '@/views/institute-manage/institutes.vue'
-import majors from '@/views/institute-manage/majors.vue'
-import classes from '@/views/class-manage/classes.vue'
-import students from '@/views/class-manage/students.vue'
+const entry = ()=>import('@/views/entry/entry.vue')
+const home = ()=>import('@/views/home/home.vue')
+const Layout = ()=>import('@/views/Layout.vue')
+const userManage = ()=>import('@/views/user-manage/user-manage.vue')
+const institutes = ()=>import('@/views/institute-manage/institutes.vue')
+const majors = ()=>import('@/views/institute-manage/majors.vue')
+const classes = ()=>import('@/views/class-manage/classes.vue')
+const students = ()=>import('@/views/class-manage/students.vue')
+const courses = ()=>import('@/views/course-manage/courses.vue')
+const selectManage = ()=>import('@/views/select-manage/select-manage.vue')
+const attendanceManage = ()=>import('@/views/attendance-manage/attendance-manage.vue')
 
 Vue.use(VueRouter)
 const routes = [
@@ -60,11 +63,13 @@ const routes = [
       {
         path:'institutes', //学院信息
         name:'institutes',
+        meta:{fatherRootActive:true},//父路由高亮(和showOnly意思差不多)
         component:institutes
       },
       {
         path:'majors', //学院对应的专业信息
         name:'major',
+        meta:{fatherRootActive:true},//父路由高亮(和showOnly意思差不多)
         component:majors
       }
     ]
@@ -79,10 +84,12 @@ const routes = [
     children:[
       {
         path:'classes', //班级基本信息
+        meta:{fatherRootActive:true},//父路由高亮(和showOnly意思差不多)
         component:classes
       },
       {
         path:'students', //班级对应的学生的信息(增删查改)
+        meta:{fatherRootActive:true},//父路由高亮(和showOnly意思差不多)
         component:students
       }
     ]
@@ -96,22 +103,26 @@ const routes = [
     name:'课程管理',
     children:[
       {
-        path:'courses' //课程信息
+        path:'courses', //课程信息
+        component:courses,
+        meta:{fatherRootActive:true},//父路由高亮(和showOnly意思差不多)
       },
-      {
-        path:'courseDetail' //课程详情信息
-      }
+      // {
+      //   path:'courseDetail' //课程详情信息(做成弹框，就不作成单独列表显示组件了)
+      // }
     ]
   },
   {
-    path:'/selecteManage', //选课信息管理
+    path:'/selectManage', //选课信息管理
     name:'选课管理',
+    component:selectManage,
     icon:'el-icon-s-platform'
   },
   {
     path:'/attendanceManage', //考勤信息管理
     name:'考勤管理',
-    icon:'el-icon-message-solid'
+    icon:'el-icon-message-solid',
+    component:attendanceManage
   }
 ]
 
@@ -122,8 +133,6 @@ const router = new VueRouter({
 })
 
 router.beforeEach((to,from,next)=>{
-  // console.log(to.path)
-  // console.log(localStorage.getItem('accessToken'))
   if(to.path!='/entry'&&!localStorage.getItem('accessToken')){
     next('/entry')
   }

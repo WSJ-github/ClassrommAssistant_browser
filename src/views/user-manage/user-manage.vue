@@ -5,7 +5,7 @@
       breadcrumbItems1:
       breadcrumbItems2"
       :sumNum="sumNum">
-      <el-button @click="showRegisterBox=true">注册用户</el-button>
+      <el-button v-if="(componentState=='common-user'&&userInfo.userType=='TS')||(componentState=='admin-user'&&userInfo.userType=='SA')" @click="showRegisterBox=true">注册用户</el-button>
     </table-header>
     <w-table 
       :tableData="tableData" 
@@ -16,6 +16,7 @@
       </template> -->
       <template slot-scope="scope">
         <!-- <el-button>编辑</el-button> -->
+        <el-button @click="updateRow(scope.rowData)">修改</el-button>
         <el-button @click="deleteRow(scope.rowData)">删除</el-button>
       </template>
     </w-table>
@@ -39,6 +40,7 @@
         <span>用户{{index+1}}:</span>
         <template v-for="item in Object.keys(registerItem)">
           <el-select
+            :multiple="item=='manageCourse'?true:false"
             :key="item" 
             v-model="registerItem[item]"
             :placeholder="`请选择${registerListHeader[item]}`" 
@@ -46,8 +48,8 @@
             <el-option
               v-for="(option,optionIndex) in optionList[item]"
               :key="optionIndex"
-              :label="option"
-              :value="option">
+              :label="option.label"
+              :value="option.value">
             </el-option>
           </el-select>
           <el-input
@@ -65,6 +67,18 @@
         <el-button type="primary" @click="registerUser" v-loading="registerLoading">确 定</el-button>
       </span>
     </el-dialog>
+    <modify-dialog
+      v-if="showModifyBox"
+      :showModifyBox="showModifyBox"
+      :modifyLoading="modifyLoading"
+      :columnInfo="componentState=='common-user'?UserInfoCommonColumns:UserInfoAdminColumns"
+      :rowData="currentRowData"
+      :optionList="optionList"
+      @clickConfirm="updateUserInfo"
+      @clickCancel="showModifyBox=false"
+      ref='modifyDialog'
+      width="70%">
+    </modify-dialog>
   </div>
 </template>
 
@@ -73,12 +87,14 @@ import UserInfoAdminColumns from './user-info-admin-columns'
 import UserInfoCommonColumns from './user-info-common-columns'
 import WTable from '@/components/WTable.vue'
 import TableHeader from '@/components/Table-Header.vue'
+import ModifyDialog from '@/components/Modify-Dialog.vue'
 import {mapState} from 'vuex'
 import api from 'api'
 export default {
     components: {
       WTable,
-      TableHeader
+      TableHeader,
+      ModifyDialog
     },
     data() {
       return{
@@ -99,8 +115,13 @@ export default {
         registerLoading:false, //点击注册用户时显示的loading
         optionList:{
           'insName':[], //学院信息，初始值为空，需要下面去网络请求回来（用来给SA注册管理员用）
-          'className':[]
-        }
+          'className':[],
+          'userType':[],
+          'manageCourse':[]
+        },
+        showModifyBox:false,
+        modifyLoading:false,
+        currentRowData:''
       }
     },
     // watch:{ //该方法作废，因为用户信息即this.userInfo已经存储在本地缓存中
@@ -130,29 +151,37 @@ export default {
     computed:{
       ...mapState(['userInfo','accessToken'])
     },
-    created() { 
+    created() {
       this.getUserInfoList()
       this.addRegisterList() //初始化注册列表(将一个初始对象加入列表中)
       this.createRegisterListHeader(); //生成注册列表的列表头
       api.FetchInstituesList(1,50).then(res=>{ //请求学院信息（取个100条，应该也没有这么多，这里的意思是取完学院信息）
         if(res.code===1){
-          res.data.forEach(item=>{this.optionList.insName.push(item.insName)})
+          res.data.forEach(item=>{this.optionList.insName.push({label:item.insName,value:item.insName})})
         }
       }).catch(err=>console.log(err))
+      if(this.componentState=='common-user') this.optionList.userType=[{label:'STU->学生',value:'STU'},{label:'IB->辅导员',value:'IB'}]
+      else this.optionList.userType=[{label:'TS->教秘',value:'TS'}]
       if(this.userInfo.userType==='TS'){ //如果当前登录的用户是教秘的话，那注册普通用户的时候只能注册本学院的用户(如果是管理员的话就都可以,在后端做判断即可)
+        api.FetchCoursesList(1,100,this.userInfo.insName).then(res=>{
+          if(res.code===1){
+            res.data.forEach(item=>{this.optionList.manageCourse.push({label:`${item.couID}(${item.couName})`,value:item.couID})})
+          }
+        }).catch(err=>console.log(err))
         api.FetchClassesList(1,50,this.userInfo.insName).then(res=>{
           if(res.code===1){
             // console.log(res.data)
-            res.data.forEach(item=>{this.optionList.className.push(item.className)})
-            console.log(this.optionList)
+            res.data.forEach(item=>{this.optionList.className.push({label:item.className,value:item.className})})
+            // console.log(this.optionList)
           }
         }).catch(err=>console.log(err))
+
       }
       else if(this.userInfo.userType==='SA'){
         api.FetchClassesList(1,100).then(res=>{
           if(res.code===1){
             // console.log(res.data)
-            res.data.forEach(item=>{this.optionList.className.push(item.className)})
+            res.data.forEach(item=>{this.optionList.className.push({label:item.className,value:item.className})})
           }
         }).catch(err=>console.log(err))
       }
@@ -161,10 +190,16 @@ export default {
       getUserInfoList(){
         this.showLoading=true;
         //1.鉴权，如果是超级管理员用户的话就能对管理员表单进行管理(需要解决userInfo每次都是异步向服务器请求的问题)
-        //下面在拉去信息时已经在后端做了鉴权操作了，所以不需要在前端鉴权了
+        //下面在拉取信息时已经在后端做了鉴权操作了，所以不需要在前端鉴权了
         api.FetchUserList(this.componentState,this.page_index,this.page_size,this.accessToken)
           .then(res=>{
             if(res.code===1){
+              console.log(123)
+              res.data.forEach(item=>{
+                if(item.manageCourse)
+                  item.manageCourse=item.manageCourse.join(',')
+              })
+              console.log(res.data)
               this.tableData=res.data
               this.sumNum=res.sumNum
               this.showLoading=false;
@@ -218,7 +253,8 @@ export default {
         if(this.componentState=='common-user'){
           let tempObject=new Object();
           UserInfoCommonColumns.forEach(item=>{
-            if(item.prop) tempObject[item.prop]=''
+            if(item.multiple) tempObject[item.prop]=[] //如果是多选，那么初始化为数组
+            else if(item.prop) tempObject[item.prop]=''
           })
           this.registerList.push(tempObject);
         }
@@ -259,6 +295,32 @@ export default {
             })
           }
         })
+      },
+      updateRow(rowData){
+        this.currentRowData=rowData
+        this.showModifyBox=true
+      },
+      updateUserInfo(oldData,newData){
+        this.modifyLoading=true
+        api.UpdateUserInfo(this.componentState,oldData,newData)
+          .then(res=>{
+            if(res.code==1){
+              this.$message({
+                type: 'success',
+                message: res.message
+              })
+              this.modifyLoading=false;
+              this.showModifyBox=false;
+              this.getUserInfoList();
+            }
+            else if(res.code==2){
+              this.modifyLoading=false;
+              this.$message({
+                type: 'error',
+                message: res.message
+              })
+            }
+          }).catch(err=>console.log(err))
       }
     }
 }

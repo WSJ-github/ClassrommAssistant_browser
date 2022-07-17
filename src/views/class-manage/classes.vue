@@ -1,5 +1,5 @@
 <template>
-  <div id="institutes-manage-institutes">
+  <div id="class-manage-institutes">
     <table-header 
       :breadcrumbItems="breadcrumbItems"
       :sumNum="sumNum">
@@ -10,6 +10,7 @@
       v-loading="showLoading"
       :columns="ClassesInfoColumns">
       <template slot-scope="scope">
+        <el-button @click="updateRow(scope.rowData)">修改</el-button>
         <el-button @click="deleteRow(scope.rowData)">删除</el-button>
         <el-button @click="clickCheck(scope.rowData)">学生信息</el-button>
       </template>
@@ -36,6 +37,19 @@
       ref='registerDialog'
       width="80%">
     </register-dialog>
+    <modify-dialog
+      v-if="showModifyBox"
+      :showModifyBox="showModifyBox"
+      :modifyLoading="modifyLoading"
+      :columnInfo="ClassesInfoColumns"
+      :rowData="currentRowData"
+      :optionList="optionList"
+      :staticDataList="staticDataList"
+      @clickConfirm="updateClassInfo"
+      @clickCancel="showModifyBox=false"
+      ref='modifyDialog'
+      width="80%">
+    </modify-dialog>
     <!-- <button @click="print"></button> -->
   </div>
 </template>
@@ -45,13 +59,15 @@ import ClassesInfoColumns from './classes-info-columns.js'
 import WTable from '@/components/WTable.vue'
 import TableHeader from '@/components/Table-Header.vue'
 import RegisterDialog from '@/components/Register-Dialog.vue'
+import ModifyDialog from '@/components/Modify-Dialog.vue'
 import api from 'api'
 import {mapState} from 'vuex'
 export default {
   components:{
     WTable,
     TableHeader,
-    RegisterDialog
+    RegisterDialog,
+    ModifyDialog
   },
   data(){
     return{
@@ -69,7 +85,11 @@ export default {
       optionList:{
         'majorName':[], //专业信息，初始值为空，需要下面去网络请求回来
         'insName':[] //学院信息
-      }
+      },
+      //下面变量是用于传递给修改框子组件的
+      showModifyBox:false,
+      modifyLoading:false,
+      currentRowData:''
     }
   },
   computed: {
@@ -82,22 +102,22 @@ export default {
   created() {
     this.getClassesList();
     if(this.userInfo.userType==='TS'){ //如果当前登录的用户是教秘的话，那注册普通用户的时候只能注册本学院的用户(如果是管理员的话就都可以,在后端做判断即可)
-      console.log('1231245124')
       api.FetchMajorsList(1,50,this.userInfo.insName).then(res=>{
         if(res.code===1){
-          res.data.forEach(item=>{this.optionList.majorName.push(item.majorName)})
+          res.data.forEach(item=>{this.optionList.majorName.push({'label':item.majorName,'value':item.majorName})})
         }
       }).catch(err=>console.log(err))
     }
     else if(this.userInfo.userType==='SA'){
       api.FetchInstituesList(1,100).then(res=>{ //拉取所有学院的信息
         if(res.code===1){
-          res.data.forEach(item=>{this.optionList.insName.push(item.insName)})
+          res.data.forEach(item=>{this.optionList.insName.push({'label':item.insName,'value':item.insName})})
         }
       }).catch(err=>console.log(err))
       api.FetchMajorsList(1,100).then(res=>{ //拉取所有专业的信息
         if(res.code===1){
-          res.data.forEach(item=>{this.optionList.majorName.push(item.majorName)})
+          console.log(res.data)
+          res.data.forEach(item=>{this.optionList.majorName.push({'label':item.majorName,'value':item.majorName})})
         }
       }).catch(err=>console.log(err))
     }
@@ -133,7 +153,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        api.DeleteClass(rowData.className)
+        api.DeleteClass(rowData.className,rowData.group_id)
         .then(res=>{
           if(res.code===1){
             this.$message({
@@ -173,12 +193,38 @@ export default {
         }
       })
     },
-    clickCheck(rowData){ //检查学生信息
+    clickCheck(rowData){ //查看当前班级的学生信息
       this.$router.push({
         path:'/classManage/students',
         query:{
           className:rowData.className,
-          insName:rowData.insName
+          insName:rowData.insName,
+          group_id:rowData.group_id
+        }
+      })
+    },
+    updateRow(rowData){
+      this.currentRowData=rowData
+      this.showModifyBox=true
+    },
+    updateClassInfo(oldData,updateObj){
+      this.modifyLoading=true
+      api.UpdateClassInfo(oldData,updateObj).then(res=>{
+        if(res.code==1){
+          this.modifyLoading=false;
+          this.showModifyBox=false;
+          this.getClassesList();
+          this.$message({
+            type: 'success',
+            message: res.message
+          })
+        }
+        else if(res.code==2){
+          this.modifyLoading=false;
+          this.$message({
+            type: 'error',
+            message: res.message
+          })
         }
       })
     }
